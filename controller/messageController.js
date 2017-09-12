@@ -1,11 +1,13 @@
 var Message = require('../model/homework7');
 const crypto=require('./cryption');
 const RX=require('@reactivex/rxjs');
+const {promisify}=require('util');
 module.exports={
 
 createMessage:function(req,res){
   let cryptedMsg=crypto.encrypt(req.body.message);
   var msg=new Message({message:cryptedMsg});
+
    msg.save(function(err,data){
     let cryptedMsg=crypto.encrypt(data.message);
     console.log(cryptedMsg);
@@ -17,26 +19,24 @@ createMessage:function(req,res){
 
 getDecryptedMessages:function(req,res){
 
-  Message.find({},function(err,data){
-   var decryptData=[];
-   for(let i=0;i<data.length;i++)
-   {
-     decryptData.push(crypto.decrypt(data[i].message).toString());
+  RX.Observable.from(Message.find({})).map(obj=>crypto.decrypt(obj.message))
+  .subscribe(function(decryptData){
 
-   }
- console.log(decryptData);
-  
-  res.render('./decriptedMessages.ejs',{messages:decryptData});
-
+    res.render('./decriptedMessages.ejs',{messages:decryptData});
   });
+
+  
 },
 
 getEncryptedMessages:function(req,res){
 
-  RX.Observable.from(Message.find({})).subscribe(function(data){
 
-  res.render('./encryptedMessages.ejs',{encryptedMessages:data});
+ promisify(Message.find({})).then(function(data){
+ res.render('./encryptedMessages.ejs',{encryptedMessages:data});
+
  });
+
+
 }
 
 
