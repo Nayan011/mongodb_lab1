@@ -33,10 +33,10 @@ getDecryptedMessages:function(req,res){
 
 getEncryptedMessages:function(req,res){
 
-  Message.find({},function(err,data){
-  res.render('./encryptedMessages.ejs',{encryptedMessages:data});
+  RX.Observable.from(Message.find({})).subscribe(function(data){
 
-  });
+  res.render('./encryptedMessages.ejs',{encryptedMessages:data});
+ });
 }
 
 
